@@ -1,4 +1,4 @@
-import { Usuario } from './usuario.js';
+import { Usuario } from './classes/usuario.js';
 
 const API_USUARIOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/usuario';
 
@@ -66,12 +66,12 @@ function mostrarVistaPrincipal() {
 // ---------------- Lógica de vistas ----------------
 
 function initAdminDashboard() {
-    alert('Vista ADMIN');
+    alert('Vista ADMIN');   // eliminar
     // Funciones admin...
 }
 
 function cargarProductos() {
-    alert('Vista USUARIO');
+    alert('Vista USUARIO'); // eliminar
     // Funciones usuario...
 }
 
@@ -91,19 +91,24 @@ function setLoginRole(role) {
 }
 
 function manejarLogin(e) {
-    e.preventDefault();
 
     if (!loginRole) {
         alert('Elegí tipo de usuario');
         return;
     }
 
-    usuarioActual = {
-        id: 0,
-        nombre: loginRole === 'ADMIN' ? 'Admin' : 'Usuario',
-        email: 'demo@mail.com',
-        role: loginRole
-    };
+    usuarioActual = new Usuario(
+        0,
+        loginRole === 'ADMIN' ? 'Admin' : 'Usuario',
+        "Demo",
+        'demo@mail.com',
+        "Contraseña1",
+        loginRole
+    );
+
+    usuarioActual.role = loginRole;
+
+    console.log('ROLE FINAL:', usuarioActual.role);
 
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
@@ -157,8 +162,9 @@ async function crearUsuario(e) {
 
     try {
         const res = await fetch(API_USUARIOS);
-        const users = await res.json();
+        if (!res.ok) throw new Error('Error al consultar la API');
 
+        const users = await res.json();
         if (users.some(u => u.email === email)) {
             alert('Email ya registrado');
             return;
@@ -200,23 +206,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // listeners
-    document.getElementById('loginForm')?.addEventListener('submit', manejarLogin);
     document.getElementById('registerForm')?.addEventListener('submit', crearUsuario);
     document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
+
+    document.getElementById('btn-usuario')?.addEventListener('click', (e) => {
+        setLoginRole('USUARIO');
+        manejarLogin(e);
+    });
+
+    document.getElementById('btn-admin')?.addEventListener('click', (e) => {
+        setLoginRole('ADMIN');
+        manejarLogin(e);
+    });
+
     document.getElementById('toggleAuth')?.addEventListener('click', toggleAuthForm);
-
-    document.getElementById('btn-usuario')?.addEventListener('click', () => setLoginRole('USUARIO'));
-    document.getElementById('btn-admin')?.addEventListener('click', () => setLoginRole('ADMIN'));
-
-    document.getElementById('toggleAuthBack')
-    ?.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleAuthForm();
-    });
-
-    document.getElementById('toggleAuth')
-    ?.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleAuthForm();
-    });
+    document.getElementById('toggleAuthBack')?.addEventListener('click', toggleAuthForm);
 });
