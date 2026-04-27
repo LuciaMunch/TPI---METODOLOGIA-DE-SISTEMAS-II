@@ -66,12 +66,12 @@ function mostrarVistaPrincipal() {
 // ---------------- Lógica de vistas ----------------
 
 function initAdminDashboard() {
-    alert('Vista ADMIN');
+    alert('Vista ADMIN');   // eliminar
     // Funciones admin...
 }
 
 function cargarProductos() {
-    alert('Vista USUARIO');
+    alert('Vista USUARIO'); // eliminar
     // Funciones usuario...
 }
 
@@ -91,7 +91,6 @@ function setLoginRole(role) {
 }
 
 function manejarLogin(e) {
-    e.preventDefault();
 
     if (!loginRole) {
         alert('Elegí tipo de usuario');
@@ -103,9 +102,13 @@ function manejarLogin(e) {
         loginRole === 'ADMIN' ? 'Admin' : 'Usuario',
         "Demo",
         'demo@mail.com',
-        "contraseña",
+        "Contraseña1",
         loginRole
     );
+
+    usuarioActual.role = loginRole;
+
+    console.log('ROLE FINAL:', usuarioActual.role);
 
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
@@ -203,12 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // listeners
-    document.getElementById('loginForm')?.addEventListener('submit', manejarLogin);
     document.getElementById('registerForm')?.addEventListener('submit', crearUsuario);
     document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
 
-    document.getElementById('btn-usuario')?.addEventListener('click', () => setLoginRole('USUARIO'));
-    document.getElementById('btn-admin')?.addEventListener('click', () => setLoginRole('ADMIN'));
+    document.getElementById('btn-usuario')?.addEventListener('click', (e) => {
+        setLoginRole('USUARIO');
+        manejarLogin(e);
+    });
+
+    document.getElementById('btn-admin')?.addEventListener('click', (e) => {
+        setLoginRole('ADMIN');
+        manejarLogin(e);
+    });
 
     document.getElementById('toggleAuth')?.addEventListener('click', toggleAuthForm);
     document.getElementById('toggleAuthBack')?.addEventListener('click', toggleAuthForm);
