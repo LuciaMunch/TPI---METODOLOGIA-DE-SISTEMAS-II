@@ -1,4 +1,4 @@
-import { Usuario } from './usuario.js';
+import { Usuario } from './classes/usuario.js';
 
 const API_USUARIOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/usuario';
 
@@ -98,12 +98,14 @@ function manejarLogin(e) {
         return;
     }
 
-    usuarioActual = {
-        id: 0,
-        nombre: loginRole === 'ADMIN' ? 'Admin' : 'Usuario',
-        email: 'demo@mail.com',
-        role: loginRole
-    };
+    usuarioActual = new Usuario(
+        0,
+        loginRole === 'ADMIN' ? 'Admin' : 'Usuario',
+        "Demo",
+        'demo@mail.com',
+        "contraseña",
+        loginRole
+    );
 
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
@@ -157,8 +159,9 @@ async function crearUsuario(e) {
 
     try {
         const res = await fetch(API_USUARIOS);
-        const users = await res.json();
+        if (!res.ok) throw new Error('Error al consultar la API');
 
+        const users = await res.json();
         if (users.some(u => u.email === email)) {
             alert('Email ya registrado');
             return;
@@ -203,20 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loginForm')?.addEventListener('submit', manejarLogin);
     document.getElementById('registerForm')?.addEventListener('submit', crearUsuario);
     document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
-    document.getElementById('toggleAuth')?.addEventListener('click', toggleAuthForm);
 
     document.getElementById('btn-usuario')?.addEventListener('click', () => setLoginRole('USUARIO'));
     document.getElementById('btn-admin')?.addEventListener('click', () => setLoginRole('ADMIN'));
 
-    document.getElementById('toggleAuthBack')
-    ?.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleAuthForm();
-    });
-
-    document.getElementById('toggleAuth')
-    ?.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleAuthForm();
-    });
+    document.getElementById('toggleAuth')?.addEventListener('click', toggleAuthForm);
+    document.getElementById('toggleAuthBack')?.addEventListener('click', toggleAuthForm);
 });
