@@ -1,6 +1,7 @@
 import { Usuario } from './classes/usuario.js';
 
 const API_USUARIOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/usuario';
+const API_PEDIDOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/pedido';
 
 let usuarioActual = null;
 let loginRole = null;
