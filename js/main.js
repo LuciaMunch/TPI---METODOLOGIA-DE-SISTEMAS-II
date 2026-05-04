@@ -1,6 +1,7 @@
 import { Usuario } from './classes/usuario.js';
 
 const API_USUARIOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/usuario';
+const API_PEDIDOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/pedido';
 
 let usuarioActual = null;
 let loginRole = null;
@@ -149,9 +150,8 @@ async function crearUsuario(e) {
     const apellido = document.getElementById('registerSurname').value;
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
-    const direccion = document.getElementById('registerDireccion').value;
-    const piso = document.getElementById('registerPiso').value;
-    const dpto = document.getElementById('registerDpto').value;
+
+
 
     if (!validarStrLogin(nombre)) {
         alert('Nombre de usuario inválido');
