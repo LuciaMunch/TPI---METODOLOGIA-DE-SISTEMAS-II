@@ -176,7 +176,9 @@ async function crearUsuario(e) {
         email,
         password,
         role: 'USUARIO',
-        direccion: `${direccion} ${piso ? 'Piso ' + piso : ''} ${dpto ? 'Dpto ' + dpto : ''}`.trim()
+        direccion,
+        piso,
+        dpto
     };
 
     try {
