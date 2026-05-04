@@ -1,12 +1,13 @@
 class Usuario {
     #password; 
-    constructor(id, nombre, apellido, email, password, role) {
+    constructor(id, nombre, apellido, email, password, role, direccion) {
         this.id = id;  // ID único de MockAPI
         this.nombre = nombre;
         this.apellido = apellido;
         this.role = role;  // 'ADMIN' o 'USUARIO'
         this.email = email;
         this.#password = password;
+        this.direccion = direccion;
     }
 
     getRole() {
@@ -17,7 +18,7 @@ class Usuario {
         return this.#password === inputPassword;
     }
 
-    // Método para cambiar password (solo para ADMIN, pero lo chequeamos en script.js)
+    // Método para cambiar password (solo para ADMIN, pero lo chequeamos en main.js)
 //    changePassword(newPassword) {
 //        this.#password = newPassword;
 //    }
