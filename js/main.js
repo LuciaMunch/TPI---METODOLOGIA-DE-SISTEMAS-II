@@ -175,7 +175,10 @@ async function crearUsuario(e) {
         apellido,
         email,
         password,
-        role: 'USUARIO'
+        role: 'USUARIO',
+        direccion,
+        piso,
+        dpto
     };
 
     try {
