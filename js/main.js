@@ -152,8 +152,9 @@ async function crearUsuario(e) {
     const apellido = document.getElementById('registerSurname').value;
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
-
-
+    const direccion = document.getElementById('registerDireccion').value;
+    const piso = document.getElementById('registerPiso').value;
+    const dpto = document.getElementById('registerDpto').value;
 
     if (!validarStrLogin(nombre)) {
         alert('Nombre de usuario inválido');
@@ -175,7 +176,8 @@ async function crearUsuario(e) {
         apellido,
         email,
         password,
-        role: 'USUARIO'
+        role: 'USUARIO',
+        direccion: `${direccion} ${piso ? 'Piso ' + piso : ''} ${dpto ? 'Dpto ' + dpto : ''}`.trim()
     };
 
     try {
