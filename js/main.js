@@ -140,6 +140,11 @@ function validarPass(password) {
     );
 }
 
+function validarStrLogin(str) {
+    const regex = /^(?=.*[a-zA-Z])[a-zA-Z]{3,20}$/;
+    return regex.test(str);
+}
+
 async function crearUsuario(e) {
     e.preventDefault();
 
@@ -147,6 +152,18 @@ async function crearUsuario(e) {
     const apellido = document.getElementById('registerSurname').value;
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
+
+
+
+    if (!validarStrLogin(nombre)) {
+        alert('Nombre de usuario inválido');
+        return;
+    }
+
+    if (!validarStrLogin(apellido)) {
+        alert('Apellido inválido');
+        return;
+    }
 
     if (!validarPass(password)) {
         alert('Contraseña débil, mínimo 8 caracteres, con mayúscula, minúscula y número');
