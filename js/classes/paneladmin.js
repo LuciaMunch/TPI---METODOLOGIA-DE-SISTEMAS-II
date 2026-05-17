@@ -1,4 +1,5 @@
 import { Usuario } from './classes/usuario.js';
+import { Producto } from './classes/producto.js'; // Importación de la clase de Lu
 
 // URL base para MockAPI (reemplazá con tu endpoint real)
 const PRODUCTOS_URL = 'https://664c36f635bb1e476aaf7af9.mockapi.io/api/v1/productos'; 
@@ -7,12 +8,10 @@ const PRODUCTOS_URL = 'https://664c36f635bb1e476aaf7af9.mockapi.io/api/v1/produc
  * Carga y renderiza el panel de administración si el usuario tiene los permisos.
  * @param {Usuario} usuarioLogueado 
  */
-
 function cargarPanelAdmin(usuarioLogueado) {
     // 1. Validar el Rol (Tiene 2 opciones: ADMIN o CLIENTE)
     if (!usuarioLogueado || usuarioLogueado.getRole() !== 'ADMIN') {
         console.warn("Acceso denegado: El usuario no es ADMIN o es un CLIENTE.");
-        // Opcional: Podés meter una redirección aquí si es necesario
         return; 
     }
 
@@ -53,23 +52,6 @@ function cargarPanelAdmin(usuarioLogueado) {
             });
         })
         .catch(err => console.error("Error al cargar el panel:", err));
-}
-
-// ──────────────────────────────────────────────
-// HU-07: CLASE PRODUCTO
-// ──────────────────────────────────────────────
-class Producto {
-    constructor(nombre, codigoId, marca, color, precio, StockActual, StockMinimo, imagen) {
-        this.nombre      = nombre;
-        this.codigoId    = codigoId;
-        this.marca       = marca;
-        this.color       = color;
-        this.precio      = precio;
-        this.StockActual = StockActual;
-        this.StockMinimo = StockMinimo;
-        this.imagen      = imagen;
-        this.activo      = true;
-    }
 }
 
 // ──────────────────────────────────────────────
@@ -136,6 +118,7 @@ async function crearProducto({ nombre, codigoId, marca, color, precio, StockActu
             return { exito: false, mensaje: 'Ya existe un producto con el mismo nombre y color. Esto se considera un producto duplicado.' };
         }
 
+        // Instanciación usando la clase Producto como me pediste
         const nuevoProducto = new Producto(nombre, codigoId, marca, color, precio, StockActual, StockMinimo, imagen);
 
         const resPOST = await fetch(PRODUCTOS_URL, {
@@ -148,11 +131,11 @@ async function crearProducto({ nombre, codigoId, marca, color, precio, StockActu
 
         const productoCreado = await resPOST.json();
 
-        return { exito: true, mensaje: 'Producto creado exitosamente. Ya está disponible en el catálogo.', producto: productoCreado };
+        return { exito: true, mensaje: '¡Producto creado exitosamente! Ya está disponible en el catálogo.', producto: productoCreado };
 
     } catch (e) {
         return { exito: false, mensaje: `Error al conectar con el servidor: ${e.message}` };
     }
 }
 
-export { cargarPanelAdmin, Producto, validarProducto, crearProducto };
+export { cargarPanelAdmin, validarProducto, crearProducto };
