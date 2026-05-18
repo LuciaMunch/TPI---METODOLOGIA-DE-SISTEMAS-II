@@ -100,17 +100,15 @@ function manejarLogin(e) {
 
     usuarioActual = new Usuario(
         0,
-        loginRole === 'ADMIN' ? 'Admin' : 'Usuario',
+        loginRole === 'ADMIN' ? 'Admin' : 'USUARIO',
         "Demo",
         'demo@mail.com',
         "Contraseña1",
-        loginRole
+        loginRole,
+        "Calle Falsa 123"
     );
 
     usuarioActual.role = loginRole;
-
-    console.log('ROLE FINAL:', usuarioActual.role);
-
     localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
 
     loginRole = null; // evitar bug de rol persistente
@@ -176,9 +174,7 @@ async function crearUsuario(e) {
         email,
         password,
         role: 'USUARIO',
-        direccion,
-        piso,
-        dpto
+        direccion: [direccion, piso, dpto]  // get por index
     };
 
     try {
