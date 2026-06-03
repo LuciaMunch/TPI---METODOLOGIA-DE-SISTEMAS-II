@@ -1,241 +1,136 @@
-import { Usuario } from './classes/usuario.js';
+/* ============================================================
+   Body Paint · Aplicación (router + navegación + arranque)
+   ============================================================ */
 
-const API_USUARIOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/usuario';
-const API_PEDIDOS = 'https://69ef4787112e1b968e244d31.mockapi.io/api/pedido';
+const App = (() => {
 
-let usuarioActual = null;
-let loginRole = null;
+  /* Definición de rutas: render + roles permitidos (null = público) */
+  const RUTAS = {
+    "":            { fn: VistasCliente.landing,    roles: null },
+    "catalogo":    { fn: VistasCliente.catalogo,   roles: [ROL.CLIENTE, ROL.VENDEDOR, ROL.ADMIN] },
+    "carro":       { fn: VistasCliente.carro,      roles: [ROL.CLIENTE] },
+    "checkout":    { fn: VistasCliente.checkout,   roles: [ROL.CLIENTE] },
+    "mis-pedidos": { fn: VistasCliente.misPedidos, roles: [ROL.CLIENTE] },
+    "login":       { fn: VistasCliente.login,      roles: null },
+    "registro":    { fn: VistasCliente.registro,   roles: null },
+    "vendedor":    { fn: VistasStaff.pedidos,      roles: [ROL.VENDEDOR] },
+    "cupones":     { fn: VistasStaff.cupones,      roles: [ROL.VENDEDOR] },
+    "reportes":    { fn: VistasStaff.reportes,     roles: [ROL.VENDEDOR, ROL.ADMIN] },
+    "admin":       { fn: VistasStaff.admin,        roles: [ROL.ADMIN] },
+  };
 
-// ---------------- UI helpers (solamente vistas) ----------------
+  function inicioPara(u) {
+    if (!u) return "#";
+    if (u.rol === ROL.ADMIN)    return "#admin";
+    if (u.rol === ROL.VENDEDOR) return "#vendedor";
+    return "#catalogo";
+  }
 
-function openModal(modalId) {
-    document.getElementById(modalId).classList.add('active');
-}
+  async function router() {
+    const hash = location.hash.replace(/^#/, "");
+    const ruta = RUTAS[hash] || RUTAS[""];
+    const usuario = Auth.getUsuario();
 
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-}
-
-window.addEventListener('click', (event) => {
-    if (event.target.classList.contains('modal')) {
-        event.target.classList.remove('active');
+    if (ruta.roles && (!usuario || !ruta.roles.includes(usuario.rol))) {
+      if (!usuario) { UI.info("Iniciá sesión para continuar."); irA("login"); }
+      else { UI.err("No tenés permisos para esa sección."); irA(inicioPara(usuario).slice(1)); }
+      return;
     }
-});
+    refrescarNav();
+    window.scrollTo(0, 0);
+    try { await ruta.fn(); }
+    catch (e) { console.error(e); document.getElementById("app").innerHTML =
+      `<div class="error-box"><b>Ocurrió un error.</b><p>${UI.escape(e.message)}</p></div>`; }
+    marcarActivo(hash);
+  }
 
-function toggleAuthForm() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
+  function irA(hash) { location.hash = "#" + hash; }
 
-    const isLoginHidden = loginForm.style.display === 'none';
+  /* ---------- Navegación según rol ---------- */
+  function refrescarNav() {
+    const u = Auth.getUsuario();
+    const nav = document.getElementById("nav-links");
+    if (!nav) return;
+    let links = [];
 
-    loginForm.style.display = isLoginHidden ? 'block' : 'none';
-    registerForm.style.display = isLoginHidden ? 'none' : 'block';
-}
-
-function resetViews() {
-    document.getElementById('adminDashboardView').style.display = 'none';
-    document.getElementById('dashboardView').style.display = 'none';
-}
-
-// ---------------- Vistas ----------------
-
-function mostrarVistaLogin() {
-    document.getElementById('authView').style.display = 'flex';
-    document.getElementById('userInfo').style.display = 'none';
-
-    resetViews();
-}
-
-function mostrarVistaPrincipal() {
-    resetViews();
-
-    document.getElementById('authView').style.display = 'none';
-    document.getElementById('userInfo').style.display = 'flex';
-
-    document.getElementById('userName').textContent = usuarioActual.nombre;
-    document.getElementById('userRole').textContent = usuarioActual.role;
-
-    if (usuarioActual.role === 'ADMIN') {
-        document.getElementById('adminDashboardView').style.display = 'block';
-        initAdminDashboard();
-    } else {
-        document.getElementById('dashboardView').style.display = 'block';
-        cargarProductos();
-    }
-}
-
-// ---------------- Lógica de vistas ----------------
-
-function initAdminDashboard() {
-    alert('Vista ADMIN');   // eliminar
-    // Funciones admin...
-}
-
-function cargarProductos() {
-    alert('Vista USUARIO'); // eliminar
-    // Funciones usuario...
-}
-
-// ---------------- LOGIN ----------------
-
-function setLoginRole(role) {
-    loginRole = role;
-
-    document.getElementById('btn-usuario')?.classList.remove('active');
-    document.getElementById('btn-admin')?.classList.remove('active');
-
-    if (role === 'USUARIO') {
-        document.getElementById('btn-usuario')?.classList.add('active');
-    } else {
-        document.getElementById('btn-admin')?.classList.add('active');
-    }
-}
-
-function manejarLogin(e) {
-
-    if (!loginRole) {
-        alert('Elegí tipo de usuario');
-        return;
+    if (!u) {
+      links = [
+        ["#login", "Iniciar sesión", "ghost"],
+        ["#registro", "Registrarse", "solid"],
+      ];
+    } else if (u.rol === ROL.CLIENTE) {
+      const n = Carro.cantidadTotal();
+      links = [
+        ["#catalogo", "Catálogo"],
+        ["#carro", `Carro${n ? ` (${n})` : ""}`],
+        ["#mis-pedidos", "Mis pedidos"],
+        ["#logout", "Salir", "ghost"],
+      ];
+    } else if (u.rol === ROL.VENDEDOR) {
+      links = [
+        ["#vendedor", "Pedidos"],
+        ["#cupones", "Cupones"],
+        ["#reportes", "Reportes"],
+        ["#logout", "Salir", "ghost"],
+      ];
+    } else if (u.rol === ROL.ADMIN) {
+      links = [
+        ["#admin", "Productos"],
+        ["#reportes", "Reportes"],
+        ["#logout", "Salir", "ghost"],
+      ];
     }
 
-    usuarioActual = new Usuario(
-        0,
-        loginRole === 'ADMIN' ? 'Admin' : 'USUARIO',
-        "Demo",
-        'demo@mail.com',
-        "Contraseña1",
-        loginRole,
-        "Calle Falsa 123"
-    );
+    nav.innerHTML = links.map(([href, txt, estilo]) =>
+      estilo ? `<a href="${href}" class="btn btn--${estilo} btn--sm">${txt}</a>`
+             : `<a href="${href}" class="nav-link">${txt}</a>`).join("");
 
-    usuarioActual.role = loginRole;
-    localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+    const saludo = document.getElementById("nav-user");
+    saludo.textContent = u ? `${u.nombre} · ${rolLabel(u.rol)}` : "";
 
-    loginRole = null; // evitar bug de rol persistente
-    document.getElementById('loginForm').reset();
-
-    mostrarVistaPrincipal();
-}
-
-function cerrarSesion() {
-    usuarioActual = null;
-    loginRole = null;
-
-    localStorage.removeItem('usuarioActual');
-
-    document.getElementById('loginForm')?.reset();
-    mostrarVistaLogin();
-}
-
-// ---------------- REGISTRO ----------------
-
-function validarPass(password) {
-    return (
-        password.length >= 8 &&
-        /[A-Z]/.test(password) &&
-        /[a-z]/.test(password) &&
-        /\d/.test(password)
-    );
-}
-
-function validarStrLogin(str) {
-    const regex = /^(?=.*[a-zA-Z])[a-zA-Z]{3,20}$/;
-    return regex.test(str);
-}
-
-async function crearUsuario(e) {
-    e.preventDefault();
-
-    const nombre = document.getElementById('registerName').value;
-    const apellido = document.getElementById('registerSurname').value;
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-
-
-
-    if (!validarStrLogin(nombre)) {
-        alert('Nombre de usuario inválido');
-        return;
-    }
-
-    if (!validarStrLogin(apellido)) {
-        alert('Apellido inválido');
-        return;
-    }
-
-    if (!validarPass(password)) {
-        alert('Contraseña débil, mínimo 8 caracteres, con mayúscula, minúscula y número');
-        return;
-    }
-
-    const userData = {
-        nombre,
-        apellido,
-        email,
-        password,
-        role: 'USUARIO',
-        direccion: [direccion, piso, dpto]  // get por index
-    };
-
-    try {
-        const res = await fetch(API_USUARIOS);
-        if (!res.ok) throw new Error('Error al consultar la API');
-
-        const users = await res.json();
-        if (users.some(u => u.email === email)) {
-            alert('Email ya registrado');
-            return;
-        }
-
-        await fetch(API_USUARIOS, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-
-        document.getElementById('registerForm').reset();
-        toggleAuthForm();
-
-    } catch (err) {
-        console.error(err);
-        alert('Error al registrar');
-    }
-}
-
-// ---------------- INIT (mantener al final) ----------------
-
-// Global (HTML)
-window.toggleAuthForm = toggleAuthForm;
-window.cerrarSesion = cerrarSesion;
-window.manejarLogin = manejarLogin;
-window.crearUsuario = crearUsuario;
-window.openModal = openModal;
-window.closeModal = closeModal;
-
-document.addEventListener('DOMContentLoaded', () => {
-    const usuarioGuardado = localStorage.getItem('usuarioActual');
-
-    if (usuarioGuardado) {
-        usuarioActual = JSON.parse(usuarioGuardado);
-        mostrarVistaPrincipal();
-    } else {
-        mostrarVistaLogin();
-    }
-
-    // listeners
-    document.getElementById('registerForm')?.addEventListener('submit', crearUsuario);
-    document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
-
-    document.getElementById('btn-usuario')?.addEventListener('click', (e) => {
-        setLoginRole('USUARIO');
-        manejarLogin(e);
+    nav.querySelectorAll('a[href="#logout"]').forEach((a) => a.onclick = (e) => {
+      e.preventDefault(); Auth.logout(); UI.info("Sesión cerrada."); refrescarNav(); irA("");
     });
+  }
 
-    document.getElementById('btn-admin')?.addEventListener('click', (e) => {
-        setLoginRole('ADMIN');
-        manejarLogin(e);
-    });
+  const rolLabel = (r) => ({ [ROL.CLIENTE]:"Cliente", [ROL.VENDEDOR]:"Vendedor", [ROL.ADMIN]:"Admin" }[r] || r);
 
-    document.getElementById('toggleAuth')?.addEventListener('click', toggleAuthForm);
-    document.getElementById('toggleAuthBack')?.addEventListener('click', toggleAuthForm);
-});
+  function marcarActivo(hash) {
+    document.querySelectorAll("#nav-links .nav-link").forEach((a) =>
+      a.classList.toggle("nav-link--active", a.getAttribute("href") === "#" + hash));
+  }
+
+  /* ---------- Datos de ejemplo (seed) ---------- */
+  const SEED = [
+    { nombre:"Pintura corporal Aqua", codigo:"BP-AZ-001", marca:"AquaColor", color:"Azul cobalto", precio:4800, stock:30, stockMinimo:8, imagen:"img/imagen-1.jpeg" },
+    { nombre:"Pintura corporal Aqua", codigo:"BP-MG-002", marca:"AquaColor", color:"Magenta",      precio:4800, stock:24, stockMinimo:8, imagen:"img/imagen-3.jpeg" },
+    { nombre:"Pintura corporal Aqua", codigo:"BP-AM-003", marca:"AquaColor", color:"Amarillo neón", precio:4800, stock:6,  stockMinimo:8, imagen:"img/imagen-4.jpeg" },
+    { nombre:"Set de pinceles artísticos x6", codigo:"BR-SET-010", marca:"KolorPro", color:"Surtido", precio:9900, stock:15, stockMinimo:5, imagen:"img/imagen-2.jpeg" },
+    { nombre:"Esponja profesional de maquillaje", codigo:"SP-ESP-020", marca:"SoftTouch", color:"Beige", precio:1500, stock:50, stockMinimo:12, imagen:"" },
+    { nombre:"Glitter biodegradable", codigo:"GL-HOL-030", marca:"EcoShine", color:"Holográfico", precio:3200, stock:40, stockMinimo:10, imagen:"img/imagen-5.jpeg" },
+    { nombre:"Plantilla de mandala", codigo:"PL-MAN-040", marca:"StencilArt", color:"Transparente", precio:1800, stock:3, stockMinimo:6, imagen:"" },
+    { nombre:"Pintura UV fluorescente", codigo:"BP-UV-004", marca:"NeonGlow", color:"Verde UV", precio:5600, stock:18, stockMinimo:6, imagen:"img/imagen-9.jpeg" },
+  ];
+
+  async function seedProductos() {
+    UI.info("Cargando productos de ejemplo…");
+    let n = 0;
+    for (const p of SEED) {
+      try { await Productos.crear(p); n++; } catch (e) { console.warn("seed:", p.codigo, e.message); }
+    }
+    UI.ok(`${n} productos de ejemplo cargados.`);
+    return n;
+  }
+
+  /* ---------- Arranque ---------- */
+  function init() {
+    window.addEventListener("hashchange", router);
+    document.getElementById("brand").onclick = (e) => { e.preventDefault(); irA(""); };
+    refrescarNav();
+    router();
+  }
+
+  return { init, router, refrescarNav, inicioPara, irA, seedProductos };
+})();
+
+document.addEventListener("DOMContentLoaded", App.init);

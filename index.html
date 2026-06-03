@@ -1,123 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Online - BodyPaint</title>
-    <link rel="stylesheet" href="./css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Body Paint · Tienda online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
-    <header>
-        <div class="header-container">
-            <div class="logo">Body Paint</div>
-            
-            <nav id="nav">
-                <ul id="navMenu"></ul>
+  <header class="topbar">
+    <a href="#" id="brand" class="brand">
+      <span class="brand__mark"></span>
+      <span class="brand__txt">Body<em>Paint</em></span>
+    </a>
+    <div class="topbar__right">
+      <span id="nav-user" class="nav-user"></span>
+      <nav id="nav-links" class="nav-links"></nav>
+    </div>
+  </header>
 
-                <div class="user-info" id="userInfo" style="display: none;">
-                    <span>Bienvenido <strong id="userName"></strong></span>
-                    <span class="user-badge" id="userRole"></span>
-                    <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
-                </div>
-            </nav>
-        </div>
-    </header>
+  <main id="app" class="app"></main>
 
-    <main id="mainContent">
-        <div id="authView" class="auth-container">
+  <footer class="footer">
+    <div class="footer__inner">
+      <div>
+        <span class="brand brand--sm"><span class="brand__mark"></span><span class="brand__txt">Body<em>Paint</em></span></span>
+        <p class="muted">Arte temporal sobre la piel. Pinturas, pinceles, glitter y plantillas.</p>
+      </div>
+      <p class="muted">TPI · Metodología de Sistemas II · 2026</p>
+    </div>
+  </footer>
 
-            <!-- LOGIN -->
-            <form class="auth-form" id="loginForm">
-                <h2>Iniciar Sesión</h2>
-
-                <button type="button" class="btn btn-primary" id="btn-usuario">
-                    Usuario
-                </button>
-
-                <button type="button" class="btn btn-primary" id="btn-admin">
-                    Admin
-                </button>
-
-                <div class="form-toggle">
-                    ¿No tienes cuenta?
-                    <a href="#" id="toggleAuth">Registrate acá</a>
-                </div>
-            </form>
-
-            <!-- REGISTRO -->
-            <form class="auth-form" id="registerForm" style="display:none;">
-                <h2>Registrarse</h2>
-
-                <div class="form-group">
-                    <label for="registerName">Nombre:</label>
-                </div>
-
-                <div class="form-group">
-                    <label for="registerSurname">Apellido:</label>
-                </div>
-
-                <div class="form-group">
-                    <label for="registerEmail">Email:</label>
-                    <input type="email" id="registerEmail" name="email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="registerPassword">Contraseña:</label>
-                    <input 
-                        type="password" 
-                        id="registerPassword" 
-                        name="password"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for = "registerDireccion">Dirección:</label>
-                    <input id = "registerDireccion" type="text" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.\-]{5,60}$" required>
-                </div>
-
-                <div class="form-group">
-                    <label for = "registerPiso">Piso:</label>
-                    <input id="registerPiso" type="text" pattern="^[0-9]{1,3}$">
-                </div>
-
-                <div class="form-group">
-                    <label for = "registerDpto">Departamento:</label>
-                    <input id="registerDpto" type="text" pattern="^[A-Za-z0-9]{1,5}$">
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="btn-registrar">
-                    Registrarse
-                </button>
-
-                <div class="form-toggle">
-                    ¿Ya tienes cuenta?
-                    <a href="#" id="toggleAuthBack">Inicia sesión aquí</a>
-                </div>
-            </form>
-
-        </div>
-
-        <!-- ADMIN -->
-        <div id="adminDashboardView" style="display: none;">
-            <div class="container">
-                <h2>Panel Admin</h2>
-                <p>Vista exclusiva para administradores</p>
-            </div>
-        </div>
-
-        <!-- USER -->
-        <div id="dashboardView" style="display: none;">
-            <div class="container">
-                <h2>Panel Usuario</h2>
-                <p>Listado de productos</p>
-            </div>
-        </div>
-    </main>
-
-    <script type="module" src="./js/main.js"></script>
+  <!-- Núcleo / infraestructura -->
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <!-- Clases de dominio (una por entidad) -->
+  <script src="js/classes/usuario.js"></script>
+  <script src="js/classes/carro.js"></script>
+  <script src="js/classes/producto.js"></script>
+  <script src="js/classes/cupon.js"></script>
+  <script src="js/classes/pedido.js"></script>
+  <!-- Vistas del cliente (define helpers usados por el panel) -->
+  <script src="js/vistas-cliente.js"></script>
+  <!-- Panel de vendedor y administrador -->
+  <script src="js/classes/paneladmin.js"></script>
+  <!-- Arranque de la aplicación -->
+  <script src="js/main.js"></script>
 </body>
-
 </html>
