@@ -111,8 +111,8 @@ const VistasStaff = (() => {
           </label>
           <label>Valor<input id="cp-valor" type="number" step="0.01" min="0.01" placeholder="Ej: 15"></label>
           <div class="grid-2">
-            <label>Desde (dd/mm/aaaa)<input id="cp-desde" placeholder="01/06/2026"></label>
-            <label>Hasta (dd/mm/aaaa)<input id="cp-hasta" placeholder="30/06/2026"></label>
+            <label>Desde (dd/mm/aaaa)<input id="cp-desde" placeholder="01/06/2026" type="date"></label>
+            <label>Hasta (dd/mm/aaaa)<input id="cp-hasta" placeholder="30/06/2026" type="date"></label>
           </div>
           <label>Clientes destino</label>
           <div id="cp-clientes" class="clientes-list"><p class="loading">Cargando clientes…</p></div>

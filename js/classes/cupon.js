@@ -14,12 +14,18 @@ const Cupones = (() => {
 
   /* dd/mm/aaaa -> Date (00:00). Devuelve null si el formato es inválido. */
   function parseFechaDD(str) {
-    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((str || "").trim());
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((str || "").trim());
+
     if (!m) return null;
-    const [_, d, mes, a] = m;
-    const fecha = new Date(Number(a), Number(mes) - 1, Number(d));
-    if (fecha.getDate() != Number(d) || fecha.getMonth() != Number(mes) - 1) return null;
-    return fecha;
+
+    const [, a, mes, d] = m;
+
+    return new Date(
+      Number(a),
+      Number(mes) - 1,
+      Number(d),
+      0, 0, 0, 0
+    );
   }
 
   /* Crear cupón (US-13) */
@@ -36,8 +42,12 @@ const Cupones = (() => {
     const fDesde = parseFechaDD(desde), fHasta = parseFechaDD(hasta);
     if (!fDesde || !fHasta) throw new Error("Las fechas deben tener formato dd/mm/aaaa.");
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    if (fDesde < hoy) throw new Error("La fecha 'desde' no puede estar en el pasado.");
     if (fHasta < hoy) throw new Error("La fecha 'hasta' no puede estar en el pasado.");
     if (fHasta < fDesde) throw new Error("La fecha 'hasta' debe ser posterior o igual a 'desde'.");
+
+    const diasVigencia = (fHasta - fDesde) / (1000 * 60 * 60 * 24);
+    if (diasVigencia > 365) throw new Error("La vigencia de un cupón no puede superar 365 días.");
 
     const payload = {
       codigo: generarCodigo(),
