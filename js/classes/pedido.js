@@ -1,5 +1,5 @@
 /* ============================================================
-   Body Paint · Pedidos (US-03, US-05, US-08, US-09)
+   Body Paint · Pedidos (US-03, US-05, US-08, US-09, US-17)
    Creación del pedido, máquina de estados y efectos sobre el stock.
 
    REGLA DE STOCK (decisión de diseño):
@@ -101,11 +101,29 @@ const Pedidos = (() => {
     return Api.actualizar(API.PEDIDOS, id, { ...pedido, estado: ESTADO.ENTREGADO });
   }
 
+  /* Cancelación del pedido por el cliente (US-17)
+     Solo el dueño puede cancelar, y solo mientras el pedido está
+     "Pendiente de entrega" (antes de que el vendedor lo confirme/despache).
+     Al cancelar se repone el stock, igual que en la cancelación del vendedor. */
+  async function cancelarCliente(id, usuarioId) {
+    const pedido = await Api.obtener(API.PEDIDOS, id);
+    if (String(pedido.clienteId) !== String(usuarioId))
+      throw new Error("Solo el dueño del pedido puede cancelarlo.");
+    if (pedido.estado !== ESTADO.PENDIENTE)
+      throw new Error("Solo se puede cancelar un pedido mientras está 'Pendiente de entrega'.");
+
+    // Reposición de stock de cada producto del pedido
+    for (const it of parseItems(pedido)) await Productos.ajustarStock(it.id, +it.cantidad);
+
+    console.log(`[EMAIL simulado] Pedido ${pedido.numero} cancelado por el cliente ${pedido.clienteEmail}.`);
+    return Api.actualizar(API.PEDIDOS, id, { ...pedido, estado: ESTADO.CANCELADO });
+  }
+
   const misPedidos = async (usuarioId) =>
     (await listar()).filter((p) => String(p.clienteId) === String(usuarioId));
 
   return {
     listar, parseItems, parseDomicilio, confirmar,
-    cambiarEstadoVendedor, confirmarRecepcion, misPedidos,
+    cambiarEstadoVendedor, confirmarRecepcion, cancelarCliente, misPedidos,
   };
 })();
