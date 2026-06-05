@@ -70,18 +70,18 @@ const VistasCliente = (() => {
       if (!lista.length) { grid.innerHTML = `<p class="empty">No se encontraron productos.</p>`; return; }
       grid.innerHTML = lista.map(cardProducto).join("");
       grid.querySelectorAll("[data-add]").forEach((b) =>
-        b.addEventListener("click", () => {
-          if (!Auth.tieneRol(ROL.CLIENTE)) return;   // visitante/staff: botón deshabilitado
-          const p = lista.find((x) => x.id === b.dataset.add);
-          if (Carro.agregar(p)) { UI.ok(`"${p.nombre}" agregado al carro.`); App.refrescarNav(); }
-        }));
+          b.addEventListener("click", () => {
+            if (!Auth.tieneRol(ROL.CLIENTE)) return;   // visitante/staff: botón deshabilitado
+            const p = lista.find((x) => x.id === b.dataset.add);
+            if (Carro.agregar(p)) { UI.ok(`"${p.nombre}" agregado al carro.`); App.refrescarNav(); }
+          }));
     };
     pintar(productos);
 
     document.getElementById("cat-buscar").addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase().trim();
       pintar(productos.filter((p) =>
-        [p.nombre, p.marca, p.color, p.codigo].some((c) => (c || "").toLowerCase().includes(q))));
+          [p.nombre, p.marca, p.color, p.codigo].some((c) => (c || "").toLowerCase().includes(q))));
     });
   }
 
@@ -188,12 +188,12 @@ const VistasCliente = (() => {
           <h3>Domicilio de envío</h3>
           <div id="dom-lista">
             ${domicilios.length
-              ? domicilios.map((d, idx) => `
+        ? domicilios.map((d, idx) => `
                 <label class="radio-dom">
                   <input type="radio" name="dom" value="${idx}" ${idx===0?"checked":""}>
                   <span>${E(domTexto(d))}</span>
                 </label>`).join("")
-              : `<p class="muted">No tenés domicilios guardados. Agregá uno abajo.</p>`}
+        : `<p class="muted">No tenés domicilios guardados. Agregá uno abajo.</p>`}
           </div>
           <details class="nuevo-dom" ${domicilios.length ? "" : "open"}>
             <summary>Agregar nuevo domicilio</summary>
@@ -223,7 +223,7 @@ const VistasCliente = (() => {
     // Selección de domicilio
     let domicilioElegido = domicilios[0] || null;
     app().querySelectorAll('input[name="dom"]').forEach((r) =>
-      r.addEventListener("change", () => { domicilioElegido = domicilios[Number(r.value)]; }));
+        r.addEventListener("change", () => { domicilioElegido = domicilios[Number(r.value)]; }));
 
     // Agregar nuevo domicilio
     document.getElementById("dom-add").onclick = async () => {
@@ -271,18 +271,18 @@ const VistasCliente = (() => {
         return;
       }
       cont.innerHTML = `<p class="cupon-disp__tit">Tus cupones disponibles:</p>` +
-        disp.map((c) => {
-          const etiqueta = c.tipo === "porcentaje" ? `${c.valor}%` : $(c.valor);
-          const vence = UI.fmtFecha(c.hasta);
-          return `<button class="cupon-chip" data-cod="${E(c.codigo)}">
+          disp.map((c) => {
+            const etiqueta = c.tipo === "porcentaje" ? `${c.valor}%` : $(c.valor);
+            const vence = UI.fmtFecha(c.hasta);
+            return `<button class="cupon-chip" data-cod="${E(c.codigo)}">
                     <b>${E(c.codigo)}</b><span>${etiqueta} · vence ${vence}</span>
                   </button>`;
-        }).join("");
+          }).join("");
       cont.querySelectorAll(".cupon-chip").forEach((b) =>
-        b.addEventListener("click", () => {
-          document.getElementById("cupon-input").value = b.dataset.cod;
-          document.getElementById("cupon-apply").click();
-        }));
+          b.addEventListener("click", () => {
+            document.getElementById("cupon-input").value = b.dataset.cod;
+            document.getElementById("cupon-apply").click();
+          }));
     }
     cargarCuponesDisponibles();
 
@@ -333,11 +333,17 @@ const VistasCliente = (() => {
       try { await Pedidos.confirmarRecepcion(b.dataset.recibir, usuario.id); UI.ok("¡Gracias! Pedido marcado como entregado."); misPedidos(); }
       catch (e) { UI.err(e.message); }
     });
+    cont.querySelectorAll("[data-cancelar]").forEach((b) => b.onclick = async () => {
+      if (!(await UI.confirmar("Cancelar pedido", "¿Confirmás que querés cancelar este pedido? Se repondrá el stock y la acción es irreversible."))) return;
+      try { await Pedidos.cancelarCliente(b.dataset.cancelar, usuario.id); UI.ok("Tu pedido fue cancelado."); misPedidos(); }
+      catch (e) { UI.err(e.message); }
+    });
   }
 
   function cardPedidoCliente(p) {
     const items = Pedidos.parseItems(p);
     const puedeRecibir = p.estado === ESTADO.EN_CAMINO;
+    const puedeCancelar = p.estado === ESTADO.PENDIENTE;
     return `
       <article class="pedido">
         <div class="pedido__top">
@@ -355,6 +361,7 @@ const VistasCliente = (() => {
           </div>
         </div>
         ${puedeRecibir ? `<button class="btn btn--solid btn--sm" data-recibir="${p.id}">Confirmar recepción</button>` : ""}
+        ${puedeCancelar ? `<button class="btn btn--ghost btn--sm" data-cancelar="${p.id}">Cancelar pedido</button>` : ""}
       </article>`;
   }
 
