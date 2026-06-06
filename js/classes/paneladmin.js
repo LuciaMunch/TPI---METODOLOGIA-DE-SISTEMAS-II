@@ -279,7 +279,6 @@ const VistasStaff = (() => {
           <div class="view-head view-head--inline">
             <h3>Catálogo</h3>
             <div class="head-tools">
-              <button class="btn btn--ghost btn--xs" id="adm-seed">Cargar ejemplo</button>
               <div class="search"><input id="adm-buscar" placeholder="Buscar por nombre, código o marca…"></div>
             </div>
           </div>
@@ -410,12 +409,6 @@ const VistasStaff = (() => {
       const q = e.target.value.toLowerCase().trim();
       pintarTabla(productos.filter((p) =>
         [p.nombre, p.codigo, p.marca].some((c) => (c || "").toLowerCase().includes(q))));
-    };
-
-    document.getElementById("adm-seed").onclick = async () => {
-      if (!(await UI.confirmar("Cargar datos de ejemplo", "Se agregarán productos de muestra al catálogo. ¿Continuar?"))) return;
-      await App.seedProductos();
-      await cargar();
     };
 
     await cargar();
